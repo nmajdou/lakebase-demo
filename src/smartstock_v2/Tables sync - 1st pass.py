@@ -38,3 +38,7 @@ print(f"Inventory Transactions update ID: {inventory_transaction_update.update_i
 # Inventory Historical
 inventory_historical_update = w.pipelines.start_update(pipeline_id=inventory_historical_pipeline_id, full_refresh=True)
 print(f"Inventory Historical update ID: {inventory_historical_update.update_id}")
+
+# COMMAND ----------
+
+

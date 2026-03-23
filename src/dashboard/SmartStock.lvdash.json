@@ -1310,7 +1310,9 @@
       "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
     },
     "genieSpace": {
-      "isEnabled": false
-    }
+      "isEnabled": false,
+      "enablementMode": "ENABLEMENT_MODE_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
   }
 }

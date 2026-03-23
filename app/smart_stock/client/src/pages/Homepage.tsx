@@ -64,7 +64,7 @@ const Homepage: React.FC<HomepageProps> = ({
   const [alertsLoading, setAlertsLoading] = useState(false);
 
   const handleAskAI = () => {
-    floatingGenieRef?.current?.openWithMessage("Hello SmartStock AI, what's wrong with my inventory?");
+    floatingGenieRef?.current?.openWithMessage("Hello PharmaStock AI, what's wrong with my inventory?");
   };
 
   useEffect(() => {
@@ -148,29 +148,29 @@ const Homepage: React.FC<HomepageProps> = ({
     const summary = `Good morning Elena! 👋 Today is ${format(today, 'EEEE, MMMM d, yyyy')}.
       Yesterday, we processed 127 transactions with a total value of €48,350.
       3 urgent reorders were triggered for critical components.
-      The Hamburg warehouse reported a 15% increase in e-bike motor demand.
-      Today's focus: Review 5 pending large orders and optimize Lyon warehouse inventory levels.`;
+      The Hamburg cold chain facility reported a 15% increase in demand for biologic drug substances.
+      Today's focus: Review 5 pending large orders and optimize Lyon GMP site inventory levels.`;
 
     setDailySummary(summary);
 
     // Default trending products
     const trending: TrendingProduct[] = [
-      { sku: 'EMOTOR-001', name: 'E-Bike Motor 750W', trend: 32, sales: 245 },
-      { sku: 'BATT-LI-500', name: 'Lithium Battery 500Wh', trend: 28, sales: 189 },
-      { sku: 'CTRL-SMART-01', name: 'Smart Controller', trend: 24, sales: 156 },
-      { sku: 'DISP-LED-05', name: 'LED Display Panel', trend: -12, sales: 98 },
-      { sku: 'SENS-TORQ-02', name: 'Torque Sensor', trend: 18, sales: 134 }
+      { sku: 'API0000001', name: 'Paclitaxel API', trend: 32, sales: 245 },
+      { sku: 'BIO0000001', name: 'Insulin Bulk Drug Substance', trend: 28, sales: 189 },
+      { sku: 'EXC0000001', name: 'Microcrystalline Cellulose PH102', trend: 24, sales: 156 },
+      { sku: 'CTL0000001', name: 'Morphine Sulfate API', trend: -12, sales: 98 },
+      { sku: 'PKG0000001', name: 'Vials 10mL Type I Glass', trend: 18, sales: 134 }
     ];
     setTrendingProducts(trending);
 
     // Default supplier metrics
     const supplierData: SupplierMetrics[] = [
-      { supplier: 'Alpine', avgDays: 3.2, onTime: 95 },
-      { supplier: 'TechnoVelo', avgDays: 4.1, onTime: 88 },
-      { supplier: 'Hamburg BP', avgDays: 2.8, onTime: 97 },
-      { supplier: 'Nord Elec', avgDays: 3.5, onTime: 92 },
-      { supplier: 'Milano Cyc', avgDays: 4.5, onTime: 85 },
-      { supplier: 'Italian Tech', avgDays: 3.8, onTime: 90 }
+      { supplier: 'Lonza Group', avgDays: 5.0, onTime: 99 },
+      { supplier: 'Siegfried Holding AG', avgDays: 3.0, onTime: 97 },
+      { supplier: 'Fareva SA', avgDays: 4.0, onTime: 95 },
+      { supplier: 'Cambrex Corp', avgDays: 6.0, onTime: 92 },
+      { supplier: 'PolyPeptide Group', avgDays: 5.5, onTime: 90 },
+      { supplier: 'Recipharm AB', avgDays: 4.5, onTime: 93 }
     ];
     setSupplierMetrics(supplierData);
 
@@ -190,7 +190,7 @@ const Homepage: React.FC<HomepageProps> = ({
   const warehouses = [
     {
       id: 'lyon',
-      name: 'Lyon Warehouse',
+      name: 'Lyon GMP Manufacturing Site',
       location: 'Lyon, France',
       coordinates: [45.7640, 4.8357] as [number, number],
       capacity: 85000,
@@ -202,7 +202,7 @@ const Homepage: React.FC<HomepageProps> = ({
     },
     {
       id: 'hamburg',
-      name: 'Hamburg Warehouse',
+      name: 'Hamburg Cold Chain Distribution Center',
       location: 'Hamburg, Germany',
       coordinates: [53.5511, 9.9937] as [number, number],
       capacity: 92000,
@@ -214,7 +214,7 @@ const Homepage: React.FC<HomepageProps> = ({
     },
     {
       id: 'milan',
-      name: 'Milan Warehouse',
+      name: 'Milan API & QC Hub',
       location: 'Milan, Italy',
       coordinates: [45.4642, 9.1900] as [number, number],
       capacity: 75000,
@@ -548,7 +548,7 @@ const Homepage: React.FC<HomepageProps> = ({
                 <ul className="text-gray-700 space-y-1 ml-7 text-sm">
                   <li>• 127 transactions processed with total value of €48,350</li>
                   <li>• On-time production rate: 92% (exceeded target)</li>
-                  <li>• Hamburg warehouse showed +15% e-bike demand</li>
+                  <li>• Hamburg cold chain facility showed +15% demand for biologic drug substances</li>
                   <li>• Zero critical stock-outs across all warehouses</li>
                 </ul>
               </div>

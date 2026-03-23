@@ -8,7 +8,9 @@ env = dbutils.widgets.get("env")
 
 # COMMAND ----------
 
+
 df_transactions = spark.table(f"{catalog}.{schema}.fact_inventory_transactions")
+
 display(df_transactions)
 
 # COMMAND ----------
@@ -75,8 +77,14 @@ ORDER BY warehouse_id, product_id, week_start
 
 # COMMAND ----------
 
-display(df_sales_history)
+from pyspark.sql.functions import monotonically_increasing_id
+
+display(df_sales_history.withColumn("id", monotonically_increasing_id()))
 
 # COMMAND ----------
 
 df_sales_history.write.mode("overwrite").saveAsTable(f"{catalog}.{schema}.fact_inventory_sales_history")
+
+# COMMAND ----------
+
+

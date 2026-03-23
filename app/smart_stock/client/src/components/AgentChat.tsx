@@ -94,7 +94,7 @@ const getDemoFlowSuggestions = (messages: Message[]): SuggestedAction[] => {
     (assistantContent.includes("po-") || assistantContent.includes("order") && assistantContent.includes("created"))
   ) {
     return [
-      { icon: '🔍', label: 'Check for more issues', message: "Hello SmartStock AI, what's wrong with my inventory?" },
+      { icon: '🔍', label: 'Check for more issues', message: "Hello PharmaStock AI, what's wrong with my inventory?" },
     ];
   }
   
@@ -131,7 +131,7 @@ export default function AgentChat({ onClose, initialMessage, onMessageSent, onNe
     setMessages([{
       id: 'welcome',
       role: 'assistant',
-      content: 'Hi! I\'m your SmartStock AI Assistant. I can help you analyze inventory data, check stock levels, forecast demand, and answer questions about your supply chain. What would you like to know?',
+      content: 'Hi! I\'m your PharmaStock AI Assistant. I can help you analyze inventory data, check stock levels, forecast demand, and answer questions about your supply chain. What would you like to know?',
       timestamp: new Date(),
       status: 'completed'
     }]);
@@ -265,7 +265,7 @@ export default function AgentChat({ onClose, initialMessage, onMessageSent, onNe
     setMessages([{
       id: 'welcome',
       role: 'assistant',
-      content: 'Hi! I\'m your SmartStock AI Assistant. I can help you analyze inventory data, check stock levels, forecast demand, and answer questions about your supply chain. What would you like to know?',
+      content: 'Hi! I\'m your PharmaStock AI Assistant. I can help you analyze inventory data, check stock levels, forecast demand, and answer questions about your supply chain. What would you like to know?',
       timestamp: new Date(),
       status: 'completed'
     }]);
@@ -485,7 +485,7 @@ export default function AgentChat({ onClose, initialMessage, onMessageSent, onNe
             <Bot className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h3 className="text-white font-bold text-lg">SmartStock AI Assistant</h3>
+            <h3 className="text-white font-bold text-lg">PharmaStock AI Assistant</h3>
             <p className="text-xs text-blue-100 flex items-center gap-1">
               <span className="inline-block w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
               Powered by Databricks + Genie

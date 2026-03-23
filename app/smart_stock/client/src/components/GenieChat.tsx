@@ -175,7 +175,7 @@ export default function GenieChat({ onClose }: GenieChatProps) {
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h3 className="text-white font-semibold">SmartStock AI Assistant</h3>
+            <h3 className="text-white font-semibold">PharmaStock AI Assistant</h3>
             <p className="text-xs text-blue-100">Powered by Databricks Genie</p>
           </div>
         </div>

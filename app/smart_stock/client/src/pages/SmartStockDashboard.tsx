@@ -64,16 +64,16 @@ const SmartStockDashboard: React.FC = () => {
   const [dashboardEmbedUrl, setDashboardEmbedUrl] = useState<string>('');
   const [resetDemoJobUrl, setResetDemoJobUrl] = useState<string>('');
   const [kpis, setKpis] = useState<ElenaKPIs>({
-    onTimeProductionRate: 0,
-    onTimeProductionRatePrev: 0,
-    onTimeProductionChange: 0,
+    onTimeProductionRate: 77.8,
+    onTimeProductionRatePrev: 99.8,
+    onTimeProductionChange: -22,
     onTimeProductionTrend: '→',
-    inventoryTurnoverRatio: 0,
+    inventoryTurnoverRatio: 28.92,
     inventoryTurnoverPrev: 0,
     inventoryTurnoverChange: 0,
     inventoryTurnoverTrend: '→',
     expeditedShipmentsCost: 12500,
-    daysOfStockOnHand: 0
+    daysOfStockOnHand: 13
   });
   const [transactions, setTransactions] = useState<TransactionResponse[]>([]);
   const [warehouses, setWarehouses] = useState<WarehouseData[]>([]);
@@ -375,23 +375,16 @@ const SmartStockDashboard: React.FC = () => {
       try {
         const response = await fetch('/api/otpr/');
         console.log('OTPR response status:', response.status);
-        if (response.ok) {
-          const otprData = await response.json();
-          console.log('OTPR Data from API:', otprData);
-          setKpis(prev => {
-            const newKpis = {
-              ...prev,
-              onTimeProductionRate: otprData.otpr_last_30d ?? 0,
-              onTimeProductionRatePrev: otprData.otpr_prev_30d ?? 0,
-              onTimeProductionChange: otprData.change_ppt ?? 0,
-              onTimeProductionTrend: otprData.trend ?? '→'
-            };
-            console.log('Updated KPIs after OTPR:', newKpis);
-            return newKpis;
-          });
-        }
+        setKpis(prev => 
+          ({...prev,
+            inventoryTurnoverRatio: 28.92, 
+            inventoryTurnoverTrend: '→', 
+            daysOfStockOnHand: 13 
+            }));
+
       } catch (otprError) {
         console.error('Error loading OTPR metrics:', otprError);
+        
       }
 
       // Load Inventory Turnover metrics from database view
@@ -769,8 +762,8 @@ const SmartStockDashboard: React.FC = () => {
             <div className="flex items-center space-x-4">
               <Factory className="w-8 h-8 text-blue-600" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">SmartStock</h1>
-                <p className="text-sm text-gray-600">VulcanTech Manufacturing · Lyon, France</p>
+                <h1 className="text-2xl font-bold text-gray-900">PharmaStock</h1>
+                <p className="text-sm text-gray-600">PharmaceuticalCo· Lyon, France</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
