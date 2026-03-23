@@ -43,16 +43,16 @@ targets:
     mode: development
     default: true
     variables:
-      catalog_name: demo_nnguyen
+      catalog_name: nm_demo
       lakebase_instance_name: smartstock
-      dim_product_pipeline_id: 8dd276d7-ddaf-48c1-905f-cd06ee3513e0
-      dim_warehouse_pipeline_id: 0835f41e-4248-474c-802c-a8b892643d61
-      fact_transactions_pipeline_id: 41a42b76-489f-486e-8aa7-755d80a41f1d
-      inventory_historical_pipeline_id: bc27caff-b9bf-4af7-85d4-c7bbe178fa70
-      inventory_forecast_pipeline_id: e69fb378-312a-4ec1-9765-03c6222c222d
+      dim_product_pipeline_id: e18c25ed-ee10-4568-adfe-55097097c503
+      dim_warehouse_pipeline_id: 9f788bdc-a6ea-470f-8113-db86e0935f5e
+      fact_transactions_pipeline_id: 7721cece-cd3c-4819-93c9-0b9f35b9f2d5
+      inventory_historical_pipeline_id: a31890be-5dbb-445e-9f24-527f4b61998f
+      inventory_forecast_pipeline_id: 5150ac8e-620c-4c42-93cf-8e519e466506
     workspace:
-      host: https://fe-vm-nam-nguyen-workspace-classic.cloud.databricks.com/
-      profile: fe-vm-nam
+      host: https://e2-demo-field-eng.cloud.databricks.com/
+      profile: narjes-field-eng
 
   prod:
     mode: production
@@ -61,12 +61,12 @@ targets:
     variables:
       catalog_name: nm_demo
       lakebase_instance_name: smartstock
-      dim_product_pipeline_id: 8586a3e0-e4f6-43bb-a654-c60006553fc9
-      dim_warehouse_pipeline_id: cda5085e-9986-4300-803b-b6910e663be9
-      fact_transactions_pipeline_id: 84c9463b-279c-4fbf-9c90-25177a4ede77
-      inventory_historical_pipeline_id: c1f57c02-f0b0-4c1e-a46a-d054f18adacd
-      inventory_forecast_pipeline_id: bbd27313-b7bb-49d1-bb32-1b547c0c7594
+      dim_product_pipeline_id: e18c25ed-ee10-4568-adfe-55097097c503
+      dim_warehouse_pipeline_id: 9f788bdc-a6ea-470f-8113-db86e0935f5e
+      fact_transactions_pipeline_id: 7721cece-cd3c-4819-93c9-0b9f35b9f2d5
+      inventory_historical_pipeline_id: a31890be-5dbb-445e-9f24-527f4b61998f
+      inventory_forecast_pipeline_id: 5150ac8e-620c-4c42-93cf-8e519e466506
     workspace:
       host: https://e2-demo-field-eng.cloud.databricks.com/
-      profile: e2-demo-west
+      profile: narjes-field-eng
       root_path: "/Workspace/Demo Assets/Manufacturing/SmartStock - Inventory Management/smartstock"
