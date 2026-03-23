@@ -10,7 +10,7 @@ import uuid
 
 # COMMAND ----------
 
-dbutils.widgets.text("catalog", "demo_nnguyen")
+dbutils.widgets.text("catalog", "nm_demo")
 catalog = dbutils.widgets.get("catalog")
 dbutils.widgets.text("schema", "smartstock")
 schema = dbutils.widgets.get("schema")
@@ -41,14 +41,14 @@ df_bronze_marc = spark.read.table(f"{catalog}.{schema}.bronze_marc")
 # COMMAND ----------
 
 category_mapping = {
-    'MOT': 'Motors',
-    'BAT': 'Batteries',
-    'FRM': 'Frames',
-    'WHL': 'Wheels',
-    'BRK': 'Brakes',
-    'ELE': 'Electronics',
-    'DRV': 'Drivetrain',
-    'ACC': 'Accessories'
+    'API': 'Active Pharmaceutical Ingredients',
+    'EXC': 'Excipients',
+    'BLK': 'Bulk Drug Products',
+    'FGD': 'Finished Goods',
+    'PKG': 'Packaging Materials',
+    'CCH': 'Cold Chain Biologics',
+    'CTR': 'Controlled Substances',
+    'CLN': 'Clinical Supply'
 }
 
 # Unit of measure mapping

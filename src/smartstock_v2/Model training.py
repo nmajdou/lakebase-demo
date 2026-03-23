@@ -21,7 +21,7 @@ from mlflow.tracking import MlflowClient
 
 # COMMAND ----------
 
-dbutils.widgets.text("catalog", "demo_nnguyen")
+dbutils.widgets.text("catalog", "nm_demo")
 catalog = dbutils.widgets.get("catalog")
 dbutils.widgets.text("schema", "smartstock")
 schema = dbutils.widgets.get("schema")

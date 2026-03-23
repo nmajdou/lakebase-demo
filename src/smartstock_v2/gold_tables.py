@@ -10,7 +10,7 @@ import uuid
 
 # COMMAND ----------
 
-dbutils.widgets.text("catalog", "demo_nnguyen")
+dbutils.widgets.text("catalog", "nm_demo")
 catalog = dbutils.widgets.get("catalog")
 dbutils.widgets.text("schema", "smartstock")
 schema = dbutils.widgets.get("schema")
@@ -407,3 +407,7 @@ df_gold_snapshots.write \
     .option("overwriteSchema", "true") \
     .partitionBy("snapshot_date") \
     .saveAsTable(f"{catalog}.{schema}.fact_inventory_daily_snapshot")
+
+# COMMAND ----------
+
+

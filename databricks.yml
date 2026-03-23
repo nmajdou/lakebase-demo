@@ -57,9 +57,9 @@ targets:
   prod:
     mode: production
     run_as:
-      user_name: nam.nguyen@databricks.com
+      user_name: narjes.majdoub@databricks.com
     variables:
-      catalog_name: manufacturing
+      catalog_name: nm_demo
       lakebase_instance_name: smartstock
       dim_product_pipeline_id: 8586a3e0-e4f6-43bb-a654-c60006553fc9
       dim_warehouse_pipeline_id: cda5085e-9986-4300-803b-b6910e663be9
@@ -67,6 +67,6 @@ targets:
       inventory_historical_pipeline_id: c1f57c02-f0b0-4c1e-a46a-d054f18adacd
       inventory_forecast_pipeline_id: bbd27313-b7bb-49d1-bb32-1b547c0c7594
     workspace:
-      host: https://e2-demo-west.cloud.databricks.com/
+      host: https://e2-demo-field-eng.cloud.databricks.com/
       profile: e2-demo-west
       root_path: "/Workspace/Demo Assets/Manufacturing/SmartStock - Inventory Management/smartstock"

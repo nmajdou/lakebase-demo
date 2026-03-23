@@ -1,6 +1,6 @@
 # Databricks notebook source
 # At the top of each notebook
-dbutils.widgets.text("catalog", "demo_nnguyen")
+dbutils.widgets.text("catalog", "nm_demo")
 dbutils.widgets.text("env", "dev")
 
 catalog = dbutils.widgets.get("catalog")
@@ -50,25 +50,26 @@ class BronzeDataGenerator:
         
         # SAP Movement Types (BWART) - realistic SAP codes
         self.movement_types = {
-            '101': {'type': 'inbound', 'desc': 'GR Goods Receipt for PO', 'frequency': 0.00},
-            '102': {'type': 'inbound', 'desc': 'GR Reversal', 'frequency': 0.00},
-            '122': {'type': 'inbound', 'desc': 'Return Delivery to Vendor', 'frequency': 0.00},
-            '201': {'type': 'sale', 'desc': 'Goods Issue for Cost Center', 'frequency': 0.46},
-            '221': {'type': 'sale', 'desc': 'Goods Issue for Project', 'frequency': 0.23},
-            '261': {'type': 'sale', 'desc': 'Goods Issue for Order', 'frequency': 0.23},
-            '262': {'type': 'inbound', 'desc': 'Reversal GI for Order', 'frequency': 0.00},
-            '301': {'type': 'adjustment', 'desc': 'Transfer Posting Plant to Plant', 'frequency': 0.04},
-            '311': {'type': 'adjustment', 'desc': 'Transfer Posting Storage Loc to Storage Loc', 'frequency': 0.03},
-            '701': {'type': 'adjustment', 'desc': 'Goods Receipt from Blocked', 'frequency': 0.005},
-            '702': {'type': 'adjustment', 'desc': 'Goods Issue to Blocked', 'frequency': 0.005},
-            '711': {'type': 'adjustment', 'desc': 'Posting Change in Stock - Phys Inv', 'frequency': 0.00}
+            '101': {'type': 'inbound', 'desc': 'GR Goods Receipt for PO (API/Excipient)', 'frequency': 0.00},
+            '102': {'type': 'inbound', 'desc': 'GR Reversal', 'frequency': 0.00},                                                                     
+            '122': {'type': 'inbound', 'desc': 'Return Delivery from Distributor', 'frequency': 0.00},
+            '201': {'type': 'sale', 'desc': 'Goods Issue to Wholesale Distributor', 'frequency': 0.30},                                               
+            '221': {'type': 'sale', 'desc': 'Goods Issue for Clinical Trial Supply', 'frequency': 0.15},
+            '261': {'type': 'sale', 'desc': 'Goods Issue for Production Order', 'frequency': 0.25},                                                   
+            '262': {'type': 'inbound', 'desc': 'Reversal GI for Production Order', 'frequency': 0.00},
+            '301': {'type': 'adjustment', 'desc': 'Inter-Site Transfer (Plant to Plant)', 'frequency': 0.04},                                         
+            '311': {'type': 'adjustment', 'desc': 'Storage Location Transfer (Cold Chain Move)', 'frequency': 0.03},                                  
+            '701': {'type': 'adjustment', 'desc': 'Release from QC Quarantine', 'frequency': 0.005},                                                  
+            '702': {'type': 'adjustment', 'desc': 'Transfer to QC Quarantine', 'frequency': 0.005},                                                   
+            '711': {'type': 'adjustment', 'desc': 'Stock Correction - Physical Inventory', 'frequency': 0.00}
+
         }
         
         # SAP Plants (WERKS)
         self.plants = {
             'FR01': {'name': 'Lyon Main Warehouse', 'country': 'FR', 'city': 'Lyon'},
-            'DE01': {'name': 'Hamburg Distribution Center', 'country': 'DE', 'city': 'Hamburg'},
-            'IT01': {'name': 'Milan Assembly Hub', 'country': 'IT', 'city': 'Milan'}
+            'DE01': {'name': 'Frankfurt Formulation & Packaging', 'country': 'DE', 'city': 'Frankfurt'},
+            'IT01': {'name': 'Milan Cold Chain Distribution Hub', 'country': 'IT', 'city': 'Milan'}
         }
         
         # Storage Locations (LGORT)
@@ -76,14 +77,14 @@ class BronzeDataGenerator:
         
         # Product categories mapping
         self.product_categories = {
-            'MOTOR': {'matkl': 'MOT', 'mtart': 'HAWA', 'count': 4},
-            'BATTERY': {'matkl': 'BAT', 'mtart': 'HAWA', 'count': 5},
-            'FRAME': {'matkl': 'FRM', 'mtart': 'HALB', 'count': 4},
-            'WHEEL': {'matkl': 'WHL', 'mtart': 'HAWA', 'count': 5},
-            'BRAKE': {'matkl': 'BRK', 'mtart': 'HAWA', 'count': 4},
-            'ELECTRONIC': {'matkl': 'ELE', 'mtart': 'HAWA', 'count': 5},
-            'DRIVETRAIN': {'matkl': 'DRV', 'mtart': 'HAWA', 'count': 4},
-            'ACCESSORY': {'matkl': 'ACC', 'mtart': 'NORM', 'count': 10}
+            'API': {'matkl': 'API', 'mtart': 'ROH', 'count': 4},            # Active Pharmaceutical Ingredients                                       
+            'EXCIPIENT': {'matkl': 'EXC', 'mtart': 'ROH', 'count': 5},      # Binders, fillers, coatings
+            'BULK_DRUG': {'matkl': 'BLK', 'mtart': 'HALB', 'count': 4},     # Intermediate / bulk product                                             
+            'FINISHED_GOOD': {'matkl': 'FGD', 'mtart': 'FERT', 'count': 5}, # Packaged drug products                                                  
+            'PACKAGING': {'matkl': 'PKG', 'mtart': 'VERP', 'count': 4},     # Blisters, vials, cartons                                                
+            'COLD_CHAIN': {'matkl': 'CCH', 'mtart': 'FERT', 'count': 5},    # Temperature-sensitive biologics                                         
+            'CONTROLLED': {'matkl': 'CTR', 'mtart': 'FERT', 'count': 4},    # Narcotics / controlled substances                                       
+            'CLINICAL_SUPPLY': {'matkl': 'CLN', 'mtart': 'HALB', 'count': 10} # Trial kits, comparators                                               
         }
         
         self.materials = []
@@ -98,19 +99,19 @@ class BronzeDataGenerator:
             # Get reorder level from category mapping
             category = material['category']
             base_reorder = {
-                'MOTOR': 15, 'BATTERY': 30, 'FRAME': 10,
-                'WHEEL': 25, 'BRAKE': 30, 'ELECTRONIC': 35,
-                'DRIVETRAIN': 30, 'ACCESSORY': 50
+                'API': 15, 'EXCIPIENT': 30, 'BULK_DRUG': 10,
+                'FINISHED_GOOD': 25, 'PACKAGING': 30, 'COLD_CHAIN': 35,
+                'CONTROLLED': 30, 'CLINICAL_SUPPLY': 50
             }.get(category, 20)
 
             # Assign each material to a health tier based on hash
             material_hash = hash(material['matnr']) % 100
-            
+
             for plant_idx, plant in enumerate(self.plants.keys()):
                 # Warehouse capacity multipliers
-                if plant_idx == 0: # FR01 Lyon - high capacity
+                if plant_idx == 0: # FR01 Lyon - API manufacturing, high capacity
                     capacity_mult = random.uniform(1.2, 1.6)
-                elif plant_idx == 1: # DE01 Hamburg - medium
+                elif plant_idx == 1: # DE01 Frankfurt - formulation, medium
                     capacity_mult = random.uniform(0.9, 1.3)
                 else:
                     capacity_mult = random.uniform(0.7, 1.1)
@@ -133,7 +134,7 @@ class BronzeDataGenerator:
     def generate_material_number(self, category: str, index: int) -> str:
         """Generate SAP-like material number (MATNR)."""
         category_prefix = self.product_categories[category]['matkl']
-        # Format: MATKL + 7-digit number (e.g., MOT0000001)
+        # Format: MATKL + 7-digit number (e.g., API0000001)
         return f"{category_prefix}{str(index).zfill(7)}"
     
     def generate_batch_id(self) -> str:
@@ -160,62 +161,62 @@ class BronzeDataGenerator:
         
         # Product definitions matching the gold layer
         product_definitions = [
-            # Motors
-            {'category': 'MOTOR', 'name': 'E-Motor 250W Mid-Drive', 'desc': 'Bosch Performance Line CX motor for mountain e-bikes', 'weight': 3.2},
-            {'category': 'MOTOR', 'name': 'E-Motor 500W Hub', 'desc': 'Rear hub motor for city e-bikes, 500W continuous power', 'weight': 4.5},
-            {'category': 'MOTOR', 'name': 'E-Motor 750W Performance', 'desc': 'High-performance mid-drive motor for cargo bikes', 'weight': 4.8},
-            {'category': 'MOTOR', 'name': 'Motor Controller Unit', 'desc': 'Smart controller with regenerative braking support', 'weight': 0.8},
-            
-            # Batteries
-            {'category': 'BATTERY', 'name': 'Battery 48V 14Ah', 'desc': 'Lithium-ion battery pack, 672Wh capacity', 'weight': 3.1},
-            {'category': 'BATTERY', 'name': 'Battery 36V 10Ah', 'desc': 'Compact battery for city bikes, 360Wh', 'weight': 2.3},
-            {'category': 'BATTERY', 'name': 'Battery 52V 20Ah', 'desc': 'Extended range battery, 1040Wh for cargo bikes', 'weight': 4.2},
-            {'category': 'BATTERY', 'name': 'Battery Management System', 'desc': 'BMS for battery protection and monitoring', 'weight': 0.2},
-            {'category': 'BATTERY', 'name': 'Battery Charger 4A', 'desc': 'Fast charger compatible with all battery models', 'weight': 1.2},
-            
-            # Frames
-            {'category': 'FRAME', 'name': 'Carbon Frame MTB', 'desc': 'Full suspension carbon frame for mountain e-bikes', 'weight': 2.8},
-            {'category': 'FRAME', 'name': 'Aluminum Frame City', 'desc': 'Step-through aluminum frame for urban bikes', 'weight': 3.2},
-            {'category': 'FRAME', 'name': 'Aluminum Frame Cargo', 'desc': 'Reinforced frame for cargo e-bikes', 'weight': 5.5},
-            {'category': 'FRAME', 'name': 'Steel Frame Classic', 'desc': 'Classic steel frame for vintage-style e-bikes', 'weight': 4.1},
-            
-            # Wheels
-            {'category': 'WHEEL', 'name': 'Wheel Set 29" MTB', 'desc': 'Tubeless-ready wheelset for mountain bikes', 'weight': 2.1},
-            {'category': 'WHEEL', 'name': 'Wheel Set 28" City', 'desc': 'City bike wheels with puncture protection', 'weight': 2.3},
-            {'category': 'WHEEL', 'name': 'Wheel Set 20" Cargo', 'desc': 'Heavy-duty wheels for cargo bikes', 'weight': 3.2},
-            {'category': 'WHEEL', 'name': 'Tire 29x2.4 MTB', 'desc': 'All-terrain tire for mountain bikes', 'weight': 0.85},
-            {'category': 'WHEEL', 'name': 'Tire 28x1.75 City', 'desc': 'City tire with reflective sidewalls', 'weight': 0.65},
-            
-            # Brakes
-            {'category': 'BRAKE', 'name': 'Hydraulic Disc Brake Set', 'desc': 'Shimano 4-piston hydraulic disc brakes', 'weight': 0.95},
-            {'category': 'BRAKE', 'name': 'Mechanical Disc Brake Set', 'desc': 'Cable-actuated disc brakes for city bikes', 'weight': 0.75},
-            {'category': 'BRAKE', 'name': 'Brake Rotor 180mm', 'desc': 'Stainless steel brake rotor', 'weight': 0.15},
-            {'category': 'BRAKE', 'name': 'Brake Pads Set', 'desc': 'High-performance brake pads', 'weight': 0.08},
-            
-            # Electronics
-            {'category': 'ELECTRONIC', 'name': 'LCD Display 3.5"', 'desc': 'Color LCD display with GPS and connectivity', 'weight': 0.25},
-            {'category': 'ELECTRONIC', 'name': 'LED Display Basic', 'desc': 'Basic LED display showing speed and battery', 'weight': 0.15},
-            {'category': 'ELECTRONIC', 'name': 'Thumb Throttle', 'desc': 'Variable speed thumb throttle', 'weight': 0.05},
-            {'category': 'ELECTRONIC', 'name': 'Pedal Assist Sensor', 'desc': 'Cadence sensor for pedal assist', 'weight': 0.08},
-            {'category': 'ELECTRONIC', 'name': 'Torque Sensor', 'desc': 'Bottom bracket torque sensor', 'weight': 0.12},
-            
-            # Drivetrain
-            {'category': 'DRIVETRAIN', 'name': 'Derailleur 11-Speed', 'desc': 'Shimano XT 11-speed rear derailleur', 'weight': 0.28},
-            {'category': 'DRIVETRAIN', 'name': 'Chain 11-Speed', 'desc': 'E-bike specific reinforced chain', 'weight': 0.35},
-            {'category': 'DRIVETRAIN', 'name': 'Cassette 11-50T', 'desc': '11-speed cassette with wide range', 'weight': 0.45},
-            {'category': 'DRIVETRAIN', 'name': 'Crankset 170mm', 'desc': 'Forged aluminum crankset with chainring', 'weight': 0.95},
-            
-            # Accessories
-            {'category': 'ACCESSORY', 'name': 'Handlebar Aluminum', 'desc': 'Wide aluminum handlebar 720mm', 'weight': 0.35},
-            {'category': 'ACCESSORY', 'name': 'Seatpost 31.6mm', 'desc': 'Aluminum seatpost with quick release', 'weight': 0.42},
-            {'category': 'ACCESSORY', 'name': 'Saddle Comfort Plus', 'desc': 'Ergonomic saddle with gel padding', 'weight': 0.48},
-            {'category': 'ACCESSORY', 'name': 'Pedals Platform', 'desc': 'Wide platform pedals with pins', 'weight': 0.38},
-            {'category': 'ACCESSORY', 'name': 'Grips Ergonomic', 'desc': 'Lock-on ergonomic grips', 'weight': 0.12},
-            {'category': 'ACCESSORY', 'name': 'LED Light Set', 'desc': 'Front and rear LED lights with USB charging', 'weight': 0.22},
-            {'category': 'ACCESSORY', 'name': 'Kickstand Heavy Duty', 'desc': 'Adjustable center kickstand', 'weight': 0.55},
-            {'category': 'ACCESSORY', 'name': 'Cable Set Complete', 'desc': 'Brake and shift cables kit', 'weight': 0.18},
-            {'category': 'ACCESSORY', 'name': 'Bolt Kit Frame', 'desc': 'Complete bolt kit for frame assembly', 'weight': 0.25},
-            {'category': 'ACCESSORY', 'name': 'Wire Harness Main', 'desc': 'Main electrical wiring harness', 'weight': 0.32}
+            # APIs (Active Pharmaceutical Ingredients) - 4 items
+            {'category': 'API', 'name': 'Ibuprofen API Granular', 'desc': 'Ibuprofen active substance, micronized granular form for oral solid dosage', 'weight': 25.0},
+            {'category': 'API', 'name': 'Paracetamol API Powder', 'desc': 'Paracetamol DC grade powder for direct compression tablets', 'weight': 25.0},
+            {'category': 'API', 'name': 'Omeprazole API Pellets', 'desc': 'Enteric-coated omeprazole pellets for capsule filling', 'weight': 10.0},
+            {'category': 'API', 'name': 'Metformin HCl API', 'desc': 'Metformin hydrochloride crystalline powder for extended release', 'weight': 25.0},
+
+            # Excipients - 5 items
+            {'category': 'EXCIPIENT', 'name': 'Microcrystalline Cellulose', 'desc': 'MCC PH-102 filler-binder for tablet compression', 'weight': 20.0},
+            {'category': 'EXCIPIENT', 'name': 'Magnesium Stearate', 'desc': 'Lubricant for tablet and capsule manufacturing', 'weight': 10.0},
+            {'category': 'EXCIPIENT', 'name': 'Hypromellose HPMC', 'desc': 'Film coating polymer and sustained-release matrix former', 'weight': 15.0},
+            {'category': 'EXCIPIENT', 'name': 'Lactose Monohydrate', 'desc': 'Spray-dried lactose for tablet filler and capsule diluent', 'weight': 25.0},
+            {'category': 'EXCIPIENT', 'name': 'Croscarmellose Sodium', 'desc': 'Superdisintegrant for immediate-release tablets', 'weight': 10.0},
+
+            # Bulk Drug (semi-finished) - 4 items
+            {'category': 'BULK_DRUG', 'name': 'Ibuprofen 400mg Bulk Tablets', 'desc': 'Uncoated bulk ibuprofen tablets pending film coat', 'weight': 18.0},
+            {'category': 'BULK_DRUG', 'name': 'Paracetamol 500mg Bulk Tablets', 'desc': 'Compressed paracetamol cores before coating', 'weight': 20.0},
+            {'category': 'BULK_DRUG', 'name': 'Omeprazole 20mg Capsule Fill', 'desc': 'Filled capsule bodies pending capping and inspection', 'weight': 8.0},
+            {'category': 'BULK_DRUG', 'name': 'Metformin 850mg Bulk Tablets', 'desc': 'Extended-release matrix tablets pre-packaging', 'weight': 22.0},
+
+            # Finished Goods - 5 items
+            {'category': 'FINISHED_GOOD', 'name': 'Ibuprofen 400mg 30ct Box', 'desc': 'Film-coated ibuprofen tablets, 30-count blister pack', 'weight': 0.12},
+            {'category': 'FINISHED_GOOD', 'name': 'Paracetamol 500mg 20ct Box', 'desc': 'Paracetamol tablets, 20-count blister in carton', 'weight': 0.08},
+            {'category': 'FINISHED_GOOD', 'name': 'Omeprazole 20mg 14ct Box', 'desc': 'Gastro-resistant capsules, 14-count blister pack', 'weight': 0.06},
+            {'category': 'FINISHED_GOOD', 'name': 'Metformin 850mg 60ct Box', 'desc': 'Extended-release tablets, 60-count HDPE bottle', 'weight': 0.18},
+            {'category': 'FINISHED_GOOD', 'name': 'Ibuprofen 200mg 50ct Bottle', 'desc': 'Sugar-coated tablets, 50-count OTC bottle', 'weight': 0.15},
+
+            # Packaging - 4 items
+            {'category': 'PACKAGING', 'name': 'PVC/Alu Blister Foil', 'desc': 'Thermoformable PVC/Aluminum blister lidding foil', 'weight': 12.0},
+            {'category': 'PACKAGING', 'name': 'Folding Carton Printed', 'desc': 'Printed carton with PIL insert pocket, serialized', 'weight': 5.0},
+            {'category': 'PACKAGING', 'name': 'HDPE Bottle 60cc', 'desc': 'Child-resistant HDPE bottle with desiccant liner cap', 'weight': 3.0},
+            {'category': 'PACKAGING', 'name': 'Serialized Label Roll', 'desc': 'Pre-printed GS1 barcode labels with unique serial numbers', 'weight': 2.5},
+
+            # Cold Chain (temperature-sensitive biologics) - 5 items
+            {'category': 'COLD_CHAIN', 'name': 'Insulin Glargine 100U/mL', 'desc': 'Long-acting insulin cartridges, 2-8°C storage required', 'weight': 0.05},
+            {'category': 'COLD_CHAIN', 'name': 'Adalimumab 40mg Syringe', 'desc': 'Pre-filled syringe, anti-TNF biologic, cold chain', 'weight': 0.03},
+            {'category': 'COLD_CHAIN', 'name': 'Erythropoietin 10000IU Vial', 'desc': 'EPO injection vial, refrigerated storage', 'weight': 0.02},
+            {'category': 'COLD_CHAIN', 'name': 'Flu Vaccine 0.5mL Syringe', 'desc': 'Seasonal influenza vaccine, pre-filled syringe', 'weight': 0.04},
+            {'category': 'COLD_CHAIN', 'name': 'mRNA Vaccine Vial 10-dose', 'desc': 'Multi-dose mRNA vaccine vial, -20°C frozen storage', 'weight': 0.03},
+
+            # Controlled Substances - 4 items
+            {'category': 'CONTROLLED', 'name': 'Morphine Sulfate 10mg Ampoule', 'desc': 'Schedule II opioid, injectable solution, vault storage', 'weight': 0.01},
+            {'category': 'CONTROLLED', 'name': 'Fentanyl 50mcg/h Patch', 'desc': 'Transdermal patch, Schedule II, serialized tracking', 'weight': 0.02},
+            {'category': 'CONTROLLED', 'name': 'Midazolam 5mg/mL Vial', 'desc': 'Schedule IV benzodiazepine, injectable sedative', 'weight': 0.01},
+            {'category': 'CONTROLLED', 'name': 'Methylphenidate 10mg Tablets', 'desc': 'Schedule II CNS stimulant, 30-count blister pack', 'weight': 0.06},
+
+            # Clinical Supply - 10 items
+            {'category': 'CLINICAL_SUPPLY', 'name': 'Trial Kit Phase III Oncology', 'desc': 'Blinded clinical trial kit for Phase III oncology study', 'weight': 0.5},
+            {'category': 'CLINICAL_SUPPLY', 'name': 'Comparator Placebo Capsules', 'desc': 'Matching placebo capsules for double-blind trial', 'weight': 0.3},
+            {'category': 'CLINICAL_SUPPLY', 'name': 'IRT Label Set Randomized', 'desc': 'Interactive response technology label set per patient', 'weight': 0.1},
+            {'category': 'CLINICAL_SUPPLY', 'name': 'Stability Sample Kit', 'desc': 'Retained stability samples for ICH long-term study', 'weight': 0.4},
+            {'category': 'CLINICAL_SUPPLY', 'name': 'QC Reference Standard Vial', 'desc': 'USP/EP reference standard for analytical testing', 'weight': 0.02},
+            {'category': 'CLINICAL_SUPPLY', 'name': 'Bioequivalence Study Kit', 'desc': 'Crossover study kit with test and reference drug', 'weight': 0.6},
+            {'category': 'CLINICAL_SUPPLY', 'name': 'Compassionate Use Pack', 'desc': 'Named-patient supply for pre-approval access program', 'weight': 0.25},
+            {'category': 'CLINICAL_SUPPLY', 'name': 'Regulatory Submission Samples', 'desc': 'Samples packaged for regulatory authority submission', 'weight': 0.15},
+            {'category': 'CLINICAL_SUPPLY', 'name': 'Temperature Logger Unit', 'desc': 'Single-use data logger for cold chain shipment monitoring', 'weight': 0.08},
+            {'category': 'CLINICAL_SUPPLY', 'name': 'Clinical Packaging Insert', 'desc': 'Patient information leaflet and dosing diary for trial', 'weight': 0.05}
         ]
         
         base_date = datetime(2021, 12, 1, 9, 0, 0)
@@ -231,7 +232,7 @@ class BronzeDataGenerator:
                 'MATNR': matnr,
                 # 'MAKTX': prod['name'] if not (has_quality_issue and random.random() < 0.3) else None,  # 1.5% null names
                 'MAKTX': prod['name'],
-                'MEINS': 'PCE' if prod['category'] != 'ACCESSORY' else random.choice(['PCE', 'SET', 'KIT']),
+                'MEINS': 'PCE' if prod['category'] != 'CLINICAL_SUPPLY' else random.choice(['PCE', 'SET', 'KIT']),
                 'MTART': self.product_categories[category]['mtart'],
                 'MATKL': self.product_categories[category]['matkl'],
                 # 'BRGEW': prod['weight'] if not (has_quality_issue and random.random() < 0.2) else None,  # 1% null weights
@@ -239,7 +240,7 @@ class BronzeDataGenerator:
                 'GEWEI': 'KG',
                 'ERSDA': (base_date + timedelta(hours=i)).strftime('%Y%m%d'),
                 'LAEDA': (base_date + timedelta(days=random.randint(0, 365))).strftime('%Y%m%d'),
-                'ERNAM': random.choice(['JSMITH', 'MJONES', 'RWILSON', 'KBROWN']),
+                'ERNAM': random.choice(['PHARMA1', 'QUALIT2', 'SUPPLY3', 'REGAFF4']),
             }
             
             # Add ingestion metadata
@@ -273,11 +274,11 @@ class BronzeDataGenerator:
                     # Reorder levels based on category
                     category = material['category']
                     base_reorder = {
-                        'MOTOR': 15, 'BATTERY': 30, 'FRAME': 10,
-                        'WHEEL': 25, 'BRAKE': 30, 'ELECTRONIC': 35,
-                        'DRIVETRAIN': 30, 'ACCESSORY': 50
+                        'API': 15, 'EXCIPIENT': 30, 'BULK_DRUG': 10,
+                        'FINISHED_GOOD': 25, 'PACKAGING': 30, 'COLD_CHAIN': 35,
+                        'CONTROLLED': 30, 'CLINICAL_SUPPLY': 50
                     }.get(category, 20)
-                    
+
                     reorder_point = base_reorder * random.uniform(0.8, 1.2)
                     
                     plant_record = {
@@ -305,47 +306,55 @@ class BronzeDataGenerator:
         
         # Price mapping from gold layer
         price_mapping = {
-            'E-Motor 250W Mid-Drive': 450.00,
-            'E-Motor 500W Hub': 380.00,
-            'E-Motor 750W Performance': 680.00,
-            'Motor Controller Unit': 125.00,
-            'Battery 48V 14Ah': 420.00,
-            'Battery 36V 10Ah': 280.00,
-            'Battery 52V 20Ah': 650.00,
-            'Battery Management System': 45.00,
-            'Battery Charger 4A': 85.00,
-            'Carbon Frame MTB': 1200.00,
-            'Aluminum Frame City': 380.00,
-            'Aluminum Frame Cargo': 520.00,
-            'Steel Frame Classic': 320.00,
-            'Wheel Set 29" MTB': 320.00,
-            'Wheel Set 28" City': 180.00,
-            'Wheel Set 20" Cargo': 240.00,
-            'Tire 29x2.4 MTB': 55.00,
-            'Tire 28x1.75 City': 32.00,
-            'Hydraulic Disc Brake Set': 220.00,
-            'Mechanical Disc Brake Set': 85.00,
-            'Brake Rotor 180mm': 28.00,
-            'Brake Pads Set': 18.00,
-            'LCD Display 3.5"': 145.00,
-            'LED Display Basic': 45.00,
-            'Thumb Throttle': 22.00,
-            'Pedal Assist Sensor': 35.00,
-            'Torque Sensor': 125.00,
-            'Derailleur 11-Speed': 185.00,
-            'Chain 11-Speed': 42.00,
-            'Cassette 11-50T': 125.00,
-            'Crankset 170mm': 95.00,
-            'Handlebar Aluminum': 45.00,
-            'Seatpost 31.6mm': 28.00,
-            'Saddle Comfort Plus': 52.00,
-            'Pedals Platform': 35.00,
-            'Grips Ergonomic': 18.00,
-            'LED Light Set': 48.00,
-            'Kickstand Heavy Duty': 22.00,
-            'Cable Set Complete': 15.00,
-            'Bolt Kit Frame': 8.50,
-            'Wire Harness Main': 38.00
+            # APIs
+            'Ibuprofen API Granular': 45.00,
+            'Paracetamol API Powder': 28.00,
+            'Omeprazole API Pellets': 320.00,
+            'Metformin HCl API': 35.00,
+            # Excipients
+            'Microcrystalline Cellulose': 12.00,
+            'Magnesium Stearate': 18.00,
+            'Hypromellose HPMC': 42.00,
+            'Lactose Monohydrate': 8.50,
+            'Croscarmellose Sodium': 55.00,
+            # Bulk Drug
+            'Ibuprofen 400mg Bulk Tablets': 85.00,
+            'Paracetamol 500mg Bulk Tablets': 65.00,
+            'Omeprazole 20mg Capsule Fill': 420.00,
+            'Metformin 850mg Bulk Tablets': 72.00,
+            # Finished Goods
+            'Ibuprofen 400mg 30ct Box': 4.80,
+            'Paracetamol 500mg 20ct Box': 2.50,
+            'Omeprazole 20mg 14ct Box': 12.50,
+            'Metformin 850mg 60ct Box': 6.20,
+            'Ibuprofen 200mg 50ct Bottle': 5.50,
+            # Packaging
+            'PVC/Alu Blister Foil': 125.00,
+            'Folding Carton Printed': 0.18,
+            'HDPE Bottle 60cc': 0.35,
+            'Serialized Label Roll': 0.08,
+            # Cold Chain
+            'Insulin Glargine 100U/mL': 38.00,
+            'Adalimumab 40mg Syringe': 650.00,
+            'Erythropoietin 10000IU Vial': 180.00,
+            'Flu Vaccine 0.5mL Syringe': 12.00,
+            'mRNA Vaccine Vial 10-dose': 22.00,
+            # Controlled
+            'Morphine Sulfate 10mg Ampoule': 8.50,
+            'Fentanyl 50mcg/h Patch': 15.00,
+            'Midazolam 5mg/mL Vial': 6.80,
+            'Methylphenidate 10mg Tablets': 3.20,
+            # Clinical Supply
+            'Trial Kit Phase III Oncology': 1200.00,
+            'Comparator Placebo Capsules': 85.00,
+            'IRT Label Set Randomized': 15.00,
+            'Stability Sample Kit': 250.00,
+            'QC Reference Standard Vial': 380.00,
+            'Bioequivalence Study Kit': 520.00,
+            'Compassionate Use Pack': 450.00,
+            'Regulatory Submission Samples': 180.00,
+            'Temperature Logger Unit': 45.00,
+            'Clinical Packaging Insert': 2.50
         }
         
         for material in self.materials:
@@ -383,27 +392,27 @@ class BronzeDataGenerator:
         
         plant_details = {
             'FR01': {
-                'NAME1': 'Lyon Main Warehouse',
-                'NAME2': 'VulcanTech France',
-                'STRAS': 'Zone Industrielle Rue de la Production',
+                'NAME1': 'Lyon API Manufacturing Site',
+                'NAME2': 'PharmaCo France SAS',
+                'STRAS': 'Zone Industrielle Pharma, Rue Pasteur 12',
                 'PSTLZ': '69007',
                 'ORT01': 'Lyon',
                 'LAND1': 'FR',
                 'REGIO': '84'  # Auvergne-Rhône-Alpes
             },
             'DE01': {
-                'NAME1': 'Hamburg Distribution Center',
-                'NAME2': 'VulcanTech Deutschland',
-                'STRAS': 'Hafencity Speicherstrasse 12',
-                'PSTLZ': '20457',
-                'ORT01': 'Hamburg',
+                'NAME1': 'Frankfurt Formulation & Packaging',
+                'NAME2': 'PharmaCo Deutschland GmbH',
+                'STRAS': 'Pharmapark Strasse 45',
+                'PSTLZ': '60528',
+                'ORT01': 'Frankfurt am Main',
                 'LAND1': 'DE',
-                'REGIO': '02'  # Hamburg
+                'REGIO': '06'  # Hessen
             },
             'IT01': {
-                'NAME1': 'Milan Assembly Hub',
-                'NAME2': 'VulcanTech Italia',
-                'STRAS': 'Via Industriale 45',
+                'NAME1': 'Milan Cold Chain Distribution Hub',
+                'NAME2': 'PharmaCo Italia SpA',
+                'STRAS': 'Via della Logistica 45',
                 'PSTLZ': '20090',
                 'ORT01': 'Segrate MI',
                 'LAND1': 'IT',
@@ -426,9 +435,9 @@ class BronzeDataGenerator:
         for material in self.materials:
             category = material['category']
             reorder_level = {
-                'MOTOR': 15, 'BATTERY': 30, 'FRAME': 10,
-                'WHEEL': 25, 'BRAKE': 30, 'ELECTRONIC': 35,
-                'DRIVETRAIN': 30, 'ACCESSORY': 50
+                'API': 15, 'EXCIPIENT': 30, 'BULK_DRUG': 10,
+                'FINISHED_GOOD': 25, 'PACKAGING': 30, 'COLD_CHAIN': 35,
+                'CONTROLLED': 30, 'CLINICAL_SUPPLY': 50
             }.get(category, 20)
 
 
@@ -524,10 +533,10 @@ class BronzeDataGenerator:
         
         print(f"Generating {num_days} days of transaction data...")
         
-        # Seasonal patterns
+        # Seasonal patterns (pharma: flu season Q4/Q1 spike, steady otherwise)
         seasonal_patterns = {
-            1: 0.6, 2: 0.7, 3: 0.9, 4: 1.2, 5: 1.4, 6: 1.5,
-            7: 1.3, 8: 1.1, 9: 1.0, 10: 0.8, 11: 0.6, 12: 0.5
+            1: 1.3, 2: 1.1, 3: 1.0, 4: 0.9, 5: 0.9, 6: 0.8,
+            7: 0.7, 8: 0.8, 9: 1.0, 10: 1.2, 11: 1.4, 12: 1.5
         }
         
         # Growth trends (future years default to 1.2)
@@ -629,7 +638,7 @@ class BronzeDataGenerator:
                     'MJAHR': mjahr,
                     'BLDAT': current_date.strftime('%Y%m%d'),  # Document date
                     'BUDAT': current_date.strftime('%Y%m%d'),  # Posting date
-                    'USNAM': random.choice(['JSMITH', 'MJONES', 'RWILSON', 'KBROWN', 'LDAVIS']),
+                    'USNAM': random.choice(['PHARMA1', 'QUALIT2', 'SUPPLY3', 'REGAFF4', 'WHOUSE5']),
                     'TCODE': random.choice(['MIGO', 'MB1A', 'MB1B', 'MB1C']),
                     'BKTXT': f"Mat Doc {mblnr}",
                     'CPUDT': trans_time.strftime('%Y%m%d'),
@@ -706,7 +715,7 @@ class BronzeDataGenerator:
                         'MEINS': 'PCE',
                         'SHKZG': shkzg,
                         'SOBKZ': '',  # Special stock indicator (usually empty)
-                        'GRUND': random.choice(['', '0001', '0002', 'QC', 'DMG']) if random.random() < 0.1 else '',
+                        'GRUND': random.choice(['', '0001', '0002', 'QC', 'DEV']) if random.random() < 0.1 else '',
                         'SGTXT': self.movement_types[bwart]['desc'],
                         'CPUDT_MKPF': trans_time.strftime('%Y%m%d'),
                         'CPUTM_MKPF': trans_time.strftime('%H%M%S')
