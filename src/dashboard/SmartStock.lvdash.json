@@ -62,7 +62,7 @@
         "    \n",
         "FROM simple_metrics;"
       ],
-      "catalog": "demo_nnguyen",
+      "catalog": "nm_demo",
       "schema": "smartstock"
     },
     {
@@ -103,7 +103,7 @@
         "FROM consumption_data c\n",
         "JOIN avg_inventory ai ON c.product_id = ai.product_id;"
       ],
-      "catalog": "demo_nnguyen",
+      "catalog": "nm_demo",
       "schema": "smartstock"
     },
     {
@@ -182,7 +182,7 @@
           }
         }
       ],
-      "catalog": "demo_nnguyen",
+      "catalog": "nm_demo",
       "schema": "smartstock"
     },
     {
@@ -191,7 +191,7 @@
       "queryLines": [
         "SELECT DISTINCT name AS product_name FROM dim_products"
       ],
-      "catalog": "demo_nnguyen",
+      "catalog": "nm_demo",
       "schema": "smartstock"
     },
     {
@@ -200,7 +200,7 @@
       "queryLines": [
         "SELECT DISTINCT name AS warehouse_name FROM dim_warehouses"
       ],
-      "catalog": "demo_nnguyen",
+      "catalog": "nm_demo",
       "schema": "smartstock"
     },
     {
@@ -263,7 +263,7 @@
           }
         }
       ],
-      "catalog": "demo_nnguyen",
+      "catalog": "nm_demo",
       "schema": "smartstock"
     },
     {
@@ -325,7 +325,7 @@
           }
         }
       ],
-      "catalog": "demo_nnguyen",
+      "catalog": "nm_demo",
       "schema": "smartstock"
     },
     {
@@ -374,7 +374,7 @@
           }
         }
       ],
-      "catalog": "demo_nnguyen",
+      "catalog": "nm_demo",
       "schema": "smartstock"
     }
   ],
